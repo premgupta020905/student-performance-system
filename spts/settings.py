@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import pymysql
+
+
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +30,7 @@ SECRET_KEY = 'django-insecure-3o6fwv8-#pxfe!fu7jp^dxrg_0m==uou+(m_k$w2$45m_e0jrv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -78,14 +81,14 @@ WSGI_APPLICATION = 'spts.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'spts_db',
+        'NAME': 'railway',
         'USER': 'root',
-        'PASSWORD': 'spts0209@prem',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'PASSWORD': 'GwSFQGKqVDFACXwViNpMnNxHhKDlMfXP',
+        'HOST': 'crossover.proxy.rlwy.net',
+        'PORT': '38289',
     }
-}
 
+}
 
 
 # Password validation

@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ student.user.get_full_name }} - Student Details{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   STUDENT DETAIL PAGE
+═══════════════════════════════════════ */
+
+.student-profile-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.student-banner {
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+}
+
+.student-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 28px;
+    background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.student-profile-body {
+    padding: 0 24px 24px;
+    text-align: center;
+}
+
+.student-avatar {
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -43px auto 14px;
+    position: relative;
+    z-index: 1;
+    border: 4px solid white;
+    box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+    font-size: 32px;
+    color: white;
+    font-weight: 700;
+    overflow: hidden;
+}
+
+.student-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.student-full-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.student-roll {
+    display: inline-block;
+    padding: 4px 14px;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    color: #667eea;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-bottom: 18px;
+}
+
+.profile-divider {
+    height: 1px;
+    background: #f3f4f6;
+    margin: 12px 0;
+}
+
+.profile-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    text-align: left;
+    border-bottom: 1px dashed #f3f4f6;
+}
+
+.profile-info-row:last-child {
+    border-bottom: none;
+}
+
+.profile-info-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #667eea;
+    flex-shrink: 0;
+}
+
+.profile-info-label {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-info-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.detail-card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-card-header h5 {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.detail-card-body {
+    padding: 22px;
+}
+
+.att-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.att-stat-box {
+    text-align: center;
+    padding: 16px 10px;
+    border-radius: 12px;
+}
+
+.att-stat-box.present { background: #d1fae5; }
+.att-stat-box.absent  { background: #fee2e2; }
+.att-stat-box.percent { background: #ede9fe; }
+
+.att-stat-val {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.att-stat-box.present .att-stat-val { color: #065f46; }
+.att-stat-box.absent  .att-stat-val { color: #991b1b; }
+.att-stat-box.percent .att-stat-val { color: #5b21b6; }
+
+.att-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.att-stat-box.present .att-stat-label { color: #10b981; }
+.att-stat-box.absent  .att-stat-label { color: #ef4444; }
+.att-stat-box.percent .att-stat-label { color: #8b5cf6; }
+
+.att-progress-wrap { margin-top: 4px; }
+
+.att-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.att-progress-bg {
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.att-progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s ease;
+}
+
+.fill-good { background: linear-gradient(90deg, #10b981, #059669); }
+.fill-warn { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.fill-bad  { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+.detail-marks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-marks-table thead tr {
+    background: #f8f9ff;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.detail-marks-table thead th {
+    padding: 11px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.detail-marks-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+
+.detail-marks-table tbody tr:hover { background: #fafbff; }
+.detail-marks-table tbody tr:last-child { border-bottom: none; }
+
+.detail-marks-table tbody td {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.marks-score {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.marks-max {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.grade-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.grade-pill.a  { background: #d1fae5; color: #065f46; }
+.grade-pill.b  { background: #dbeafe; color: #1e40af; }
+.grade-pill.c  { background: #fef3c7; color: #92400e; }
+.grade-pill.f  { background: #fee2e2; color: #991b1b; }
+
+@media (max-width: 768px) {
+    .att-stats-row { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'students_list' %}">Students</a>
+            </li>
+            <li class="breadcrumb-item active">{{ student.roll_number }}</li>
+        </ol>
+    </nav>
+    <h1 class="page-title">
+        <i class="fas fa-user-graduate"></i> Student Details
+    </h1>
+</div>
+
+<div class="row">
+
+    <!-- ── LEFT: PROFILE CARD ── -->
+    <div class="col-md-4">
+        <div class="student-profile-card">
+
+            <div class="student-banner"></div>
+
+            <div class="student-profile-body">
+
+                <!-- Avatar -->
+                <div class="student-avatar">
+                    {% if student.profile_image %}
+                        <img src="{{ student.profile_image.url }}" alt="Profile">
+                    {% else %}
+                        {{ student.user.get_full_name|first|upper }}
+                    {% endif %}
+                </div>
+
+                <div class="student-full-name">{{ student.user.get_full_name }}</div>
+                <div class="student-roll">{{ student.roll_number }}</div>
+
+                <div class="profile-divider"></div>
+
+                <div class="profile-info-row">
+                    <div class="profile-info-icon"><i class="fas fa-envelope"></i></div>
+                    <div>
+                        <div class="profile-info-label">Email</div>
+                        <div class="profile-info-value">{{ student.user.email|default:"N/A" }}</div>
+                    </div>
+                </div>
+
+                <!-- ✅ FIX: phone student model se -->
+                <div class="profile-info-row">
+                    <div class="profile-info-icon"><i class="fas fa-phone"></i></div>
+                    <div>
+                        <div class="profile-info-label">Phone</div>
+                        <div class="profile-info-value">{{ student.phone|default:"N/A" }}</div>
+                    </div>
+                </div>
+
+                <div class="profile-info-row">
+                    <div class="profile-info-icon"><i class="fas fa-building"></i></div>
+                    <div>
+                        <div class="profile-info-label">Department</div>
+                        <div class="profile-info-value">{{ student.department.name|default:"N/A" }}</div>
+                    </div>
+                </div>
+
+                <div class="profile-info-row">
+                    <div class="profile-info-icon"><i class="fas fa-calendar"></i></div>
+                    <div>
+                        <div class="profile-info-label">Admission Date</div>
+                        <div class="profile-info-value">{{ student.admission_date|date:"d M Y" }}</div>
+                    </div>
+                </div>
+
+                {% if student.parent_name %}
+                <div class="profile-info-row">
+                    <div class="profile-info-icon"><i class="fas fa-user-friends"></i></div>
+                    <div>
+                        <div class="profile-info-label">Parent Name</div>
+                        <div class="profile-info-value">{{ student.parent_name }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if student.parent_phone %}
+                <div class="profile-info-row">
+                    <div class="profile-info-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div>
+                        <div class="profile-info-label">Parent Phone</div>
+                        <div class="profile-info-value">{{ student.parent_phone }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RIGHT: DETAILS ── -->
+    <div class="col-md-8">
+
+        <!-- Attendance Card -->
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <i class="fas fa-calendar-check" style="color:white"></i>
+                <h5>Attendance Overview</h5>
+            </div>
+            <div class="detail-card-body">
+
+                <div class="att-stats-row">
+                    <div class="att-stat-box present">
+                        <div class="att-stat-val">{{ present_count }}</div>
+                        <div class="att-stat-label">Present</div>
+                    </div>
+                    <div class="att-stat-box absent">
+                        <div class="att-stat-val">{{ absent_count }}</div>
+                        <div class="att-stat-label">Absent</div>
+                    </div>
+                    <div class="att-stat-box percent">
+                        <div class="att-stat-val">{{ attendance_percentage }}%</div>
+                        <div class="att-stat-label">Percentage</div>
+                    </div>
+                </div>
+
+                <div class="att-progress-wrap">
+                    <div class="att-progress-label">
+                        <span>Attendance</span>
+                        <span>{{ attendance_percentage }}%</span>
+                    </div>
+                    <div class="att-progress-bg">
+                        <div class="att-progress-fill
+                            {% if attendance_percentage >= 75 %}fill-good
+                            {% elif attendance_percentage >= 50 %}fill-warn
+                            {% else %}fill-bad{% endif %}"
+                            style="width: {{ attendance_percentage }}%">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Marks Card -->
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <i class="fas fa-chart-line" style="color:white"></i>
+                <h5>Recent Exam Results</h5>
+            </div>
+
+            {% if marks %}
+            <div class="table-responsive">
+                <table class="detail-marks-table">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mark in marks %}
+                        <tr>
+                            <td style="font-weight:600; color:#1f2937;">{{ mark.exam.name }}</td>
+                            <td style="color:#6b7280;">{{ mark.exam.subject.name }}</td>
+                            <td>
+                                <span class="marks-score">{{ mark.marks_obtained }}</span>
+                                <span class="marks-max"> / {{ mark.exam.max_marks }}</span>
+                            </td>
+                            <td style="font-weight:600;">{{ mark.get_percentage|floatformat:1 }}%</td>
+                            <td>
+                                <span class="grade-pill
+                                    {% if mark.get_grade == 'A+' or mark.get_grade == 'A' %}a
+                                    {% elif mark.get_grade == 'B+' or mark.get_grade == 'B' %}b
+                                    {% elif mark.get_grade == 'C' %}c
+                                    {% else %}f{% endif %}">
+                                    {{ mark.get_grade }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- ✅ Empty state -->
+            <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
+                <i class="fas fa-inbox fa-2x d-block mb-2" style="color:#d1d5db;"></i>
+                <p style="font-weight:600; color:#6b7280; margin-bottom:4px;">No Exam Records Yet</p>
+                <p style="font-size:13px;">Marks will appear here once entered by the teacher.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

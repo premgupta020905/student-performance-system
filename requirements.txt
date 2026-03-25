@@ -1,0 +1,5 @@
+Django==5.2.8
+mysqlclient==2.2.7
+pandas==2.3.3
+openpyxl==3.1.5
+matplotlib==3.10.8

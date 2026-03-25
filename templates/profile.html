@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - SPTS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   PROFILE PAGE
+═══════════════════════════════════════ */
+
+.profile-avatar-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* Top gradient banner */
+.avatar-banner {
+    height: 90px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+}
+
+.avatar-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.avatar-body {
+    padding: 0 24px 24px;
+    text-align: center;
+    position: relative;
+}
+
+/* Avatar circle */
+.avatar-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -45px auto 16px;
+    position: relative;
+    z-index: 1;
+    border: 4px solid white;
+    box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+    font-size: 36px;
+    color: white;
+    font-weight: 700;
+    overflow: hidden;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.avatar-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.avatar-role {
+    display: inline-block;
+    padding: 4px 14px;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    color: #667eea;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 20px;
+}
+
+.avatar-divider {
+    height: 1px;
+    background: #f3f4f6;
+    margin: 16px 0;
+}
+
+/* Info rows in avatar card */
+.avatar-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #6b7280;
+    text-align: left;
+}
+
+.avatar-info-row i {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #667eea;
+    flex-shrink: 0;
+}
+
+.avatar-info-row span {
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Change password button */
+.change-pwd-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    margin-top: 16px;
+    border: none;
+}
+
+.change-pwd-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    color: white;
+}
+
+/* ═══════════════════════════════════════
+   EDIT PROFILE FORM CARD
+═══════════════════════════════════════ */
+.edit-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+
+.edit-card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.edit-card-header h5 {
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.edit-card-body {
+    padding: 28px;
+}
+
+/* Form labels */
+.edit-card-body label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Inputs */
+.edit-card-body .form-control {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: #1f2937;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.edit-card-body .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    outline: none;
+}
+
+/* Image upload area */
+.upload-area {
+    border: 2px dashed #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+}
+
+.upload-area:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.upload-area i {
+    font-size: 28px;
+    color: #667eea;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.upload-area p {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+/* Section divider */
+.form-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    margin: 24px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* Save button */
+.save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.save-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-user"></i> My Profile
+    </h1>
+    <p class="page-subtitle">Manage your personal information</p>
+</div>
+
+<div class="row">
+
+    <!-- ── LEFT: AVATAR CARD ── -->
+    <div class="col-md-4">
+        <div class="profile-avatar-card">
+
+            <div class="avatar-banner"></div>
+
+            <div class="avatar-body">
+
+                <!-- Avatar -->
+                <div class="avatar-circle">
+                    {% if teacher and teacher.profile_image %}
+                        <img src="{{ teacher.profile_image.url }}" alt="Profile">
+                    {% elif student and student.profile_image %}
+                        <img src="{{ student.profile_image.url }}" alt="Profile">
+                    {% else %}
+                        {{ user.get_full_name|first|upper }}
+                    {% endif %}
+                </div>
+
+                <!-- Name & Role -->
+                <div class="avatar-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="avatar-role">
+                    {% if teacher %}Teacher{% elif student %}Student{% else %}Admin{% endif %}
+                </div>
+
+                <!-- Info rows -->
+                <div class="avatar-divider"></div>
+
+                {% if user.email %}
+                <div class="avatar-info-row">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ user.email }}</span>
+                </div>
+                {% endif %}
+
+                {% if teacher and teacher.phone %}
+                <div class="avatar-info-row">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ teacher.phone }}</span>
+                </div>
+                {% elif student and student.phone %}
+                <div class="avatar-info-row">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ student.phone }}</span>
+                </div>
+                {% endif %}
+
+                {% if student %}
+                <div class="avatar-info-row">
+                    <i class="fas fa-id-card"></i>
+                    <span>Roll: {{ student.roll_number }}</span>
+                </div>
+                <div class="avatar-info-row">
+                    <i class="fas fa-building"></i>
+                    <span>{{ student.department.name }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Change Password -->
+                <a href="{% url 'change_password' %}" class="change-pwd-btn">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RIGHT: EDIT FORM ── -->
+    <div class="col-md-8">
+        <div class="edit-card">
+
+            <div class="edit-card-header">
+                <i class="fas fa-edit" style="color:white"></i>
+                <h5>Edit Profile</h5>
+            </div>
+
+            <div class="edit-card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Basic Info -->
+                    <div class="form-section-title">Basic Information</div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>First Name</label>
+                            <input type="text"
+                                   name="first_name"
+                                   class="form-control"
+                                   value="{{ user.first_name }}"
+                                   placeholder="First name">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Last Name</label>
+                            <input type="text"
+                                   name="last_name"
+                                   class="form-control"
+                                   value="{{ user.last_name }}"
+                                   placeholder="Last name">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email Address</label>
+                        <input type="email"
+                               name="email"
+                               class="form-control"
+                               value="{{ user.email }}"
+                               placeholder="your@email.com">
+                    </div>
+
+                    <!-- Contact Info -->
+                    <div class="form-section-title">Contact Information</div>
+
+                    <div class="mb-3">
+                        <label>Phone Number</label>
+                        <input type="text"
+                               name="phone"
+                               class="form-control"
+                               value="{% if teacher %}{{ teacher.phone }}{% elif student %}{{ student.phone }}{% endif %}"
+                               placeholder="+91 98765 43210">
+                    </div>
+
+                    <!-- Profile Image -->
+                    <div class="form-section-title">Profile Picture</div>
+
+                    <div class="mb-4">
+                        <div class="upload-area">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload a new profile picture</p>
+                            <p style="font-size:11px; margin-top:4px;">JPG, PNG supported</p>
+                            <input type="file" name="profile_image" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

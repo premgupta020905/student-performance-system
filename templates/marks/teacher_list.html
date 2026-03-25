@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Marks Management - SPTS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-chart-line"></i> Marks Management
+    </h1>
+    <p class="page-subtitle">Enter and manage student marks</p>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-book-reader"></i> My Subjects
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for subject in subjects %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 border">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ subject.name }}</h5>
+                                <p class="text-muted mb-2">{{ subject.code }}</p>
+                                <p><strong>Course:</strong> {{ subject.course.name }}</p>
+                                <p><strong>Max Marks:</strong> {{ subject.max_marks }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-clipboard-list"></i> Exams
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Exam Name</th>
+                                <th>Subject</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Max Marks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in exams %}
+                            <tr>
+                                <td><strong>{{ exam.name }}</strong></td>
+                                <td>{{ exam.subject.name }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ exam.get_exam_type_display }}</span>
+                                </td>
+                                <td>{{ exam.date|date:"M d, Y" }}</td>
+                                <td>{{ exam.max_marks }}</td>
+                                <td>
+                                    <a href="{% url 'enter_marks' exam.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> Enter Marks
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No exams found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SPTS - Student Performance Tracking System{% endblock %}</title>
+    <!-- Favicon — circular logo -->
+    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome — ✅ BUG FIX: CDN use kiya, personal kit ID nahi -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-graduation-cap"></i> SPTS</h4>
+        </div>
+
+        <div class="sidebar-menu">
+
+            <!-- Dashboard — sabko dikhta hai -->
+            <a href="{% url 'dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+
+            {% if user.is_superuser %}
+            <!-- ADMIN SIDEBAR -->
+            <a href="{% url 'students_list' %}" class="menu-item {% if 'students' in request.path %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="{% url 'reports' %}" class="menu-item {% if 'reports' in request.path %}active{% endif %}">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </a>
+
+            {% elif user.teacher_profile %}
+            <!-- TEACHER SIDEBAR -->
+            <a href="{% url 'students_list' %}" class="menu-item {% if 'students' in request.path %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="{% url 'attendance_list' %}" class="menu-item {% if 'attendance' in request.path %}active{% endif %}">
+                <i class="fas fa-calendar-check"></i>
+                <span>Attendance</span>
+            </a>
+            <a href="{% url 'marks_list' %}" class="menu-item {% if 'marks' in request.path %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Marks</span>
+            </a>
+            <a href="{% url 'reports' %}" class="menu-item {% if 'reports' in request.path %}active{% endif %}">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </a>
+
+            {% elif user.student_profile %}
+            <!-- STUDENT SIDEBAR -->
+            <a href="{% url 'attendance_list' %}" class="menu-item {% if 'attendance' in request.path %}active{% endif %}">
+                <i class="fas fa-calendar-check"></i>
+                <span>Attendance</span>
+            </a>
+            <a href="{% url 'marks_list' %}" class="menu-item {% if 'marks' in request.path %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Marks</span>
+            </a>
+            <a href="{% url 'reports' %}" class="menu-item {% if 'reports' in request.path %}active{% endif %}">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </a>
+
+            {% endif %}
+
+            <!-- Profile — sabko dikhta hai -->
+            <a href="{% url 'profile' %}" class="menu-item {% if 'profile' in request.path %}active{% endif %}">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+
+            <a href="{% url 'logout' %}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="navbar-right">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {% if user.teacher_profile and user.teacher_profile.profile_image %}
+                            <img src="{{ user.teacher_profile.profile_image.url }}"
+                                 class="rounded-circle"
+                                 width="40" height="40">
+                        {% elif user.student_profile and user.student_profile.profile_image %}
+                            <img src="{{ user.student_profile.profile_image.url }}"
+                                 class="rounded-circle"
+                                 width="40" height="40">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-2x"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="user-details">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-role">
+                            {% if user.is_superuser %}Admin
+                            {% elif user.teacher_profile %}Teacher
+                            {% elif user.student_profile %}Student
+                            {% else %}User{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Messages -->
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

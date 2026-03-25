@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Attendance - SPTS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   STUDENT ATTENDANCE LIST
+═══════════════════════════════════════ */
+
+/* Stats grid */
+.att-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.att-stat-card {
+    border-radius: 16px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.att-stat-card:hover { transform: translateY(-4px); }
+
+.att-stat-card::after {
+    content: '';
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    bottom: -20px;
+    right: -20px;
+}
+
+.att-stat-card.green  { background: linear-gradient(135deg, #10b981, #059669); }
+.att-stat-card.red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.att-stat-card.amber  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.att-stat-card.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+.att-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+}
+
+.att-stat-val {
+    font-size: 30px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.att-stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+/* Alert bar */
+.att-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.att-alert.good {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.att-alert.warn {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.att-alert i { font-size: 18px; }
+
+/* ── TABLE CARD ── */
+.att-records-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+
+.att-records-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.att-records-header h5 {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.att-records-header span {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.att-records-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.att-records-table thead tr {
+    background: #f8f9ff;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.att-records-table thead th {
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.att-records-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+
+.att-records-table tbody tr:hover { background: #fafbff; }
+.att-records-table tbody tr:last-child { border-bottom: none; }
+
+.att-records-table tbody td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: #374151;
+    vertical-align: middle;
+}
+
+/* Date cell */
+.date-cell {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.date-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 1px;
+}
+
+/* Subject pill */
+.subject-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-badge.present { background: #d1fae5; color: #065f46; }
+.status-badge.absent  { background: #fee2e2; color: #991b1b; }
+.status-badge.late    { background: #fef3c7; color: #92400e; }
+.status-badge.excused { background: #dbeafe; color: #1e40af; }
+
+/* Remarks */
+.remarks-text {
+    font-size: 12px;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Empty state */
+.att-empty {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.att-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+    color: #667eea;
+}
+
+.att-empty h5 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.att-empty p {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 992px) {
+    .att-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+    .att-stats-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-calendar-check"></i> My Attendance
+    </h1>
+    <p class="page-subtitle">View your attendance records</p>
+</div>
+
+<!-- ── STATS CARDS ── -->
+<div class="att-stats-grid">
+
+    <div class="att-stat-card green">
+        <div class="att-stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="att-stat-val">{{ present }}</div>
+        <div class="att-stat-label">Present</div>
+    </div>
+
+    <div class="att-stat-card red">
+        <div class="att-stat-icon"><i class="fas fa-times-circle"></i></div>
+        <div class="att-stat-val">{{ absent }}</div>
+        <div class="att-stat-label">Absent</div>
+    </div>
+
+    <div class="att-stat-card amber">
+        <div class="att-stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="att-stat-val">{{ late }}</div>
+        <div class="att-stat-label">Late</div>
+    </div>
+
+    <div class="att-stat-card purple">
+        <div class="att-stat-icon"><i class="fas fa-percentage"></i></div>
+        <div class="att-stat-val">{{ percentage }}%</div>
+        <div class="att-stat-label">Percentage</div>
+    </div>
+
+</div>
+
+<!-- ── ALERT BAR ── -->
+{% if percentage >= 75 %}
+<div class="att-alert good">
+    <i class="fas fa-check-circle"></i>
+    ✅ Great! Your attendance is above the required 75%. Keep it up!
+</div>
+{% else %}
+<div class="att-alert warn">
+    <i class="fas fa-exclamation-triangle"></i>
+    ⚠️ Warning! Your attendance is below 75%. Please attend more classes.
+</div>
+{% endif %}
+
+<!-- ── RECORDS TABLE ── -->
+<div class="att-records-card">
+
+    <div class="att-records-header">
+        <h5><i class="fas fa-list me-2"></i> Attendance Records</h5>
+        {% if attendances %}
+        <span>{{ attendances|length }} Records</span>
+        {% endif %}
+    </div>
+
+    {% if attendances %}
+    <div class="table-responsive">
+        <table class="att-records-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendances %}
+                <tr>
+                    <td style="color:#9ca3af; font-weight:600;">
+                        {{ forloop.counter }}
+                    </td>
+
+                    <td>
+                        <div class="date-cell">{{ attendance.date|date:"d M Y" }}</div>
+                        <div class="date-sub">{{ attendance.date|date:"l" }}</div>
+                    </td>
+
+                    <td>
+                        <span class="subject-pill">{{ attendance.subject.name }}</span>
+                    </td>
+
+                    <td>
+                        <span class="status-badge {{ attendance.status }}">
+                            {% if attendance.status == 'present' %}
+                                ✅ Present
+                            {% elif attendance.status == 'absent' %}
+                                ❌ Absent
+                            {% elif attendance.status == 'late' %}
+                                🕐 Late
+                            {% else %}
+                                📋 {{ attendance.get_status_display }}
+                            {% endif %}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="remarks-text">
+                            {{ attendance.remarks|default:"—" }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <div class="att-empty">
+        <div class="att-empty-icon">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <h5>No Attendance Records Yet</h5>
+        <p>Your attendance will appear here<br>once your teacher marks it.</p>
+    </div>
+
+    {% endif %}
+</div>
+
+{% endblock %}

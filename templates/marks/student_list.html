@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Marks - SPTS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   STUDENT MARKS PAGE
+═══════════════════════════════════════ */
+
+/* Summary cards */
+.marks-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.marks-summary-card {
+    border-radius: 16px;
+    padding: 22px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.marks-summary-card:hover { transform: translateY(-4px); }
+
+.marks-summary-card::after {
+    content: '';
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    bottom: -20px;
+    right: -20px;
+}
+
+.marks-summary-card.purple { background: linear-gradient(135deg, #667eea, #764ba2); }
+.marks-summary-card.green  { background: linear-gradient(135deg, #10b981, #059669); }
+.marks-summary-card.amber  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+.summary-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+}
+
+.summary-val {
+    font-size: 30px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.summary-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+/* ── MARKS TABLE ── */
+.marks-records-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+
+.marks-records-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.marks-records-header h5 {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.marks-records-header span {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.marks-records-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.marks-records-table thead tr {
+    background: #f8f9ff;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.marks-records-table thead th {
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.marks-records-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+
+.marks-records-table tbody tr:hover { background: #fafbff; }
+.marks-records-table tbody tr:last-child { border-bottom: none; }
+
+.marks-records-table tbody td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: #374151;
+    vertical-align: middle;
+}
+
+/* Exam type badge */
+.exam-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.exam-type-badge.midterm    { background: #dbeafe; color: #1e40af; }
+.exam-type-badge.final      { background: #ede9fe; color: #5b21b6; }
+.exam-type-badge.quiz       { background: #d1fae5; color: #065f46; }
+.exam-type-badge.assignment { background: #fef3c7; color: #92400e; }
+.exam-type-badge.practical  { background: #fce7f3; color: #9d174d; }
+
+/* Marks score */
+.marks-obtained {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.marks-max-txt {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* Grade pill */
+.grade-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.grade-pill.aplus { background: #d1fae5; color: #065f46; }
+.grade-pill.a     { background: #d1fae5; color: #065f46; }
+.grade-pill.b     { background: #dbeafe; color: #1e40af; }
+.grade-pill.c     { background: #fef3c7; color: #92400e; }
+.grade-pill.f     { background: #fee2e2; color: #991b1b; }
+
+/* Percentage bar */
+.pct-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.pct-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pct-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.pct-fill-great { background: linear-gradient(90deg, #10b981, #059669); }
+.pct-fill-good  { background: linear-gradient(90deg, #667eea, #764ba2); }
+.pct-fill-avg   { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.pct-fill-poor  { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+.pct-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    min-width: 36px;
+    text-align: right;
+}
+
+/* Subject pill */
+.subject-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Empty state */
+.marks-empty {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.marks-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+    color: #667eea;
+}
+
+.marks-empty h5 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.marks-empty p {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+    .marks-summary-grid { grid-template-columns: 1fr 1fr; }
+    .pct-bar-wrap { min-width: 80px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-chart-line"></i> My Marks
+    </h1>
+    <p class="page-subtitle">View your exam results and performance</p>
+</div>
+
+{% if marks %}
+
+<!-- ── SUMMARY CARDS ── -->
+{% with total=marks|length %}
+<div class="marks-summary-grid">
+
+    <div class="marks-summary-card purple">
+        <div class="summary-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div class="summary-val">{{ total }}</div>
+        <div class="summary-label">Total Exams</div>
+    </div>
+
+    <div class="marks-summary-card green">
+        <div class="summary-icon"><i class="fas fa-percentage"></i></div>
+        <div class="summary-val">
+            {{ avg_percentage }}%
+        </div>
+        <div class="summary-label">Avg Percentage</div>
+    </div>
+
+    <div class="marks-summary-card amber">
+        <div class="summary-icon"><i class="fas fa-trophy"></i></div>
+        <div class="summary-val">
+            {% if avg_percentage >= 90 %}A+
+            {% elif avg_percentage >= 80 %}A
+            {% elif avg_percentage >= 70 %}B+
+            {% elif avg_percentage >= 60 %}B
+            {% elif avg_percentage >= 50 %}C
+            {% elif avg_percentage >= 40 %}D
+            {% else %}F{% endif %}
+        </div>
+        <div class="summary-label">Overall Grade</div>
+    </div>
+
+</div>
+{% endwith %}
+
+<!-- ── MARKS TABLE ── -->
+<div class="marks-records-card">
+
+    <div class="marks-records-header">
+        <h5><i class="fas fa-list me-2"></i> Exam Results</h5>
+        <span>{{ marks|length }} Records</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="marks-records-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Exam Name</th>
+                    <th>Subject</th>
+                    <th>Type</th>
+                    <th>CI-1</th>
+                    <th>CI-2</th>
+                    <th>CI-3</th>
+                    <th>Total</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mark in marks %}
+                <tr>
+                    <td style="color:#9ca3af; font-weight:600;">{{ forloop.counter }}</td>
+
+                    <td style="font-weight:600; color:#1f2937;">{{ mark.exam.name }}</td>
+
+                    <td>
+                        <span class="subject-pill">{{ mark.exam.subject.name }}</span>
+                    </td>
+
+                    <td>
+                        <span class="exam-type-badge {{ mark.exam.exam_type }}">
+                            {{ mark.exam.get_exam_type_display }}
+                        </span>
+                    </td>
+
+                    <td style="font-weight:600; color:#6b7280;">
+                        {{ mark.ci_1|default:"—" }}
+                    </td>
+                    <td style="font-weight:600; color:#6b7280;">
+                        {{ mark.ci_2|default:"—" }}
+                    </td>
+                    <td style="font-weight:600; color:#6b7280;">
+                        {{ mark.ci_3|default:"—" }}
+                    </td>
+
+                    <td>
+                        <span class="marks-obtained">{{ mark.marks_obtained }}</span>
+                        <span class="marks-max-txt"> / {{ mark.exam.max_marks }}</span>
+                    </td>
+
+                    <td>
+                        <div class="pct-bar-wrap">
+                            <div class="pct-bar-bg">
+                                <div class="pct-bar-fill
+                                    {% if mark.get_percentage >= 90 %}pct-fill-great
+                                    {% elif mark.get_percentage >= 60 %}pct-fill-good
+                                    {% elif mark.get_percentage >= 40 %}pct-fill-avg
+                                    {% else %}pct-fill-poor{% endif %}"
+                                    style="width: {{ mark.get_percentage|floatformat:0 }}%">
+                                </div>
+                            </div>
+                            <span class="pct-text">{{ mark.get_percentage|floatformat:1 }}%</span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="grade-pill
+                            {% if mark.get_grade == 'A+' %}aplus
+                            {% elif mark.get_grade == 'A' %}a
+                            {% elif mark.get_grade == 'B+' or mark.get_grade == 'B' %}b
+                            {% elif mark.get_grade == 'C' %}c
+                            {% else %}f{% endif %}">
+                            {{ mark.get_grade }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% else %}
+
+<!-- ── EMPTY STATE ── -->
+<div class="marks-records-card">
+    <div class="marks-records-header">
+        <h5><i class="fas fa-list me-2"></i> Exam Results</h5>
+    </div>
+    <div class="marks-empty">
+        <div class="marks-empty-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h5>No Marks Yet</h5>
+        <p>Your exam results will appear here<br>once your teacher enters your marks.</p>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

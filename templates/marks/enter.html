@@ -1,0 +1,472 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dict_extras %}
+
+{% block title %}Enter Marks - {{ exam.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.exam-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.exam-info-card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-left: 4px solid transparent;
+    transition: transform 0.2s ease;
+}
+
+.exam-info-card:hover { transform: translateY(-3px); }
+
+.exam-info-card.blue   { border-left-color: #667eea; }
+.exam-info-card.teal   { border-left-color: #0d9488; }
+.exam-info-card.amber  { border-left-color: #f59e0b; }
+.exam-info-card.green  { border-left-color: #10b981; }
+
+.exam-info-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.exam-info-icon.blue   { background: linear-gradient(135deg, #667eea, #764ba2); }
+.exam-info-icon.teal   { background: linear-gradient(135deg, #0d9488, #0891b2); }
+.exam-info-icon.amber  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.exam-info-icon.green  { background: linear-gradient(135deg, #10b981, #059669); }
+
+.exam-info-text .info-label {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.exam-info-text .info-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.marks-table-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+
+.marks-table-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.marks-table-header h5 {
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0;
+}
+
+.marks-table-header span {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.marks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.marks-table thead tr {
+    background: #f8f9ff;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.marks-table thead th {
+    padding: 13px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    text-align: center;
+}
+
+.marks-table thead th:nth-child(3) { text-align: left; }
+
+.marks-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s ease;
+}
+
+.marks-table tbody tr:hover { background: #fafbff; }
+.marks-table tbody tr:last-child { border-bottom: none; }
+
+.marks-table tbody td {
+    padding: 12px 16px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.marks-table tbody td:nth-child(3) { text-align: left; }
+
+.row-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.roll-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    color: #667eea;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.student-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.ci-input {
+    width: 80px;
+    padding: 8px 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    color: #1f2937;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.ci-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+/* ✅ Live total display */
+.total-display {
+    font-size: 17px;
+    font-weight: 800;
+    color: #10b981;
+    min-width: 40px;
+    display: inline-block;
+}
+
+.total-display.over-max {
+    color: #ef4444;
+}
+
+.remarks-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.remarks-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+.action-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-save:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: white;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+@media (max-width: 992px) {
+    .exam-info-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+    .exam-info-grid { grid-template-columns: 1fr 1fr; }
+    .ci-input { width: 60px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'marks_list' %}">Marks</a>
+            </li>
+            <li class="breadcrumb-item active">{{ exam.name }}</li>
+        </ol>
+    </nav>
+    <h1 class="page-title">
+        <i class="fas fa-edit"></i> Enter Marks
+    </h1>
+    <p class="page-subtitle">{{ exam.name }} – {{ exam.subject.name }}</p>
+</div>
+
+<!-- ── EXAM INFO CARDS ── -->
+<div class="exam-info-grid">
+
+    <div class="exam-info-card blue">
+        <div class="exam-info-icon blue"><i class="fas fa-book"></i></div>
+        <div class="exam-info-text">
+            <div class="info-label">Subject</div>
+            <div class="info-value">{{ exam.subject.name }}</div>
+        </div>
+    </div>
+
+    <div class="exam-info-card teal">
+        <div class="exam-info-icon teal"><i class="fas fa-clipboard-list"></i></div>
+        <div class="exam-info-text">
+            <div class="info-label">Exam Type</div>
+            <div class="info-value">{{ exam.get_exam_type_display }}</div>
+        </div>
+    </div>
+
+    <div class="exam-info-card amber">
+        <div class="exam-info-icon amber"><i class="fas fa-calendar-alt"></i></div>
+        <div class="exam-info-text">
+            <div class="info-label">Date</div>
+            <div class="info-value">{{ exam.date|date:"d M Y" }}</div>
+        </div>
+    </div>
+
+    <div class="exam-info-card green">
+        <div class="exam-info-icon green"><i class="fas fa-star"></i></div>
+        <div class="exam-info-text">
+            <div class="info-label">Max Marks</div>
+            <div class="info-value" id="maxMarksVal">{{ exam.max_marks }}</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── MARKS TABLE ── -->
+<div class="marks-table-card">
+
+    <div class="marks-table-header">
+        <h5><i class="fas fa-users me-2"></i> Student Marks Entry</h5>
+        <span>{{ students|length }} Students</span>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>CI-1</th>
+                        <th>CI-2</th>
+                        <th>CI-3</th>
+                        <th>Total</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    {% with existing_marks|get_item:student.id as mark %}
+                    <tr>
+                        <td><span class="row-num">{{ forloop.counter }}</span></td>
+
+                        <td>
+                            <span class="roll-badge">{{ student.roll_number }}</span>
+                        </td>
+
+                        <td>
+                            <div class="student-name">{{ student.user.get_full_name }}</div>
+                        </td>
+
+                        <!-- ✅ CI inputs with data-student for live total -->
+                        <td>
+                            <input type="number"
+                                   step="0.1" min="0"
+                                   name="ci1_{{ student.id }}"
+                                   class="ci-input ci-field"
+                                   data-student="{{ student.id }}"
+                                   value="{% if mark %}{{ mark.ci_1 }}{% endif %}"
+                                   placeholder="0">
+                        </td>
+
+                        <td>
+                            <input type="number"
+                                   step="0.1" min="0"
+                                   name="ci2_{{ student.id }}"
+                                   class="ci-input ci-field"
+                                   data-student="{{ student.id }}"
+                                   value="{% if mark %}{{ mark.ci_2 }}{% endif %}"
+                                   placeholder="0">
+                        </td>
+
+                        <td>
+                            <input type="number"
+                                   step="0.1" min="0"
+                                   name="ci3_{{ student.id }}"
+                                   class="ci-input ci-field"
+                                   data-student="{{ student.id }}"
+                                   value="{% if mark %}{{ mark.ci_3 }}{% endif %}"
+                                   placeholder="0">
+                        </td>
+
+                        <!-- ✅ Live total -->
+                        <td>
+                            <span class="total-display"
+                                  id="total_{{ student.id }}">
+                                {% if mark %}{{ mark.marks_obtained }}{% else %}0{% endif %}
+                            </span>
+                        </td>
+
+                        <td>
+                            <input type="text"
+                                   name="remarks_{{ student.id }}"
+                                   class="remarks-input"
+                                   value="{% if mark %}{{ mark.remarks }}{% endif %}"
+                                   placeholder="Optional...">
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:40px; color:#9ca3af;">
+                            <i class="fas fa-user-slash fa-2x d-block mb-2"></i>
+                            No students enrolled for this exam
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="action-bar">
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Save Marks
+            </button>
+            <a href="{% url 'marks_list' %}" class="btn-cancel">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ✅ Live CI total calculator
+const maxMarks = parseFloat(document.getElementById('maxMarksVal').textContent) || 0;
+
+document.querySelectorAll('.ci-field').forEach(input => {
+    input.addEventListener('input', function() {
+        const sid = this.dataset.student;
+        const ci1 = parseFloat(document.querySelector(`input[name="ci1_${sid}"]`).value) || 0;
+        const ci2 = parseFloat(document.querySelector(`input[name="ci2_${sid}"]`).value) || 0;
+        const ci3 = parseFloat(document.querySelector(`input[name="ci3_${sid}"]`).value) || 0;
+
+        const total = ci1 + ci2 + ci3;
+        const display = document.getElementById(`total_${sid}`);
+
+        display.textContent = total % 1 === 0 ? total : total.toFixed(1);
+
+        // Red if over max
+        if (maxMarks > 0 && total > maxMarks) {
+            display.classList.add('over-max');
+        } else {
+            display.classList.remove('over-max');
+        }
+    });
+});
+
+// Calculate totals on page load for existing marks
+document.querySelectorAll('.ci-field').forEach(input => {
+    input.dispatchEvent(new Event('input'));
+});
+</script>
+{% endblock %}

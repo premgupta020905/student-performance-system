@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Reports - SPTS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   REPORTS PAGE
+═══════════════════════════════════════ */
+
+/* Top download button area */
+.reports-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.download-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    border: none;
+}
+
+.download-pdf-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* ── REPORT CARDS ── */
+.reports-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.report-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+}
+
+.report-card-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 16px;
+}
+
+.report-course {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.report-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.report-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.report-meta-item i {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+/* Grade badge big */
+.report-grade-big {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.grade-big-a  { background: #d1fae5; color: #065f46; }
+.grade-big-b  { background: #dbeafe; color: #1e40af; }
+.grade-big-c  { background: #fef3c7; color: #92400e; }
+.grade-big-f  { background: #fee2e2; color: #991b1b; }
+
+/* Stats row inside card */
+.report-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 16px 24px;
+    gap: 12px;
+}
+
+.report-stat {
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+
+.report-stat-val {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 3px;
+}
+
+.report-stat-label {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+}
+
+/* Percentage bar in card */
+.report-pct-bar-wrap {
+    padding: 0 24px 20px;
+}
+
+.report-pct-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.report-pct-bg {
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.report-pct-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 1s ease;
+}
+
+.fill-great { background: linear-gradient(90deg, #10b981, #059669); }
+.fill-good  { background: linear-gradient(90deg, #667eea, #764ba2); }
+.fill-avg   { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.fill-poor  { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+/* Generated date */
+.report-generated {
+    padding: 8px 24px 16px;
+    font-size: 12px;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ── EMPTY STATE ── */
+.reports-empty {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    padding: 70px 20px;
+    text-align: center;
+}
+
+.reports-empty-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+    color: #667eea;
+}
+
+.reports-empty h5 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.reports-empty p {
+    font-size: 14px;
+    color: #9ca3af;
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 768px) {
+    .report-stats-row { grid-template-columns: repeat(2, 1fr); }
+    .report-card-top  { grid-template-columns: 1fr; }
+    .report-grade-big { display: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="reports-topbar">
+    <div>
+        <h1 class="page-title">
+            <i class="fas fa-file-alt"></i>
+            {% if user.is_superuser %}All Student Reports{% else %}My Reports{% endif %}
+        </h1>
+        <p class="page-subtitle">
+            {% if user.is_superuser %}Generate and view all student reports{% else %}View your academic performance reports{% endif %}
+        </p>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+
+        {% if user.is_superuser %}
+        <!-- ✅ Admin ke liye — Generate All Reports button -->
+        <form method="POST" action="{% url 'generate_all_reports' %}" style="margin:0;">
+            {% csrf_token %}
+            <div style="display:flex; gap:8px; align-items:center;">
+                <select name="semester"
+                        style="padding:10px 14px; border:2px solid #e5e7eb; border-radius:10px; font-size:13px; font-weight:600; color:#374151; outline:none; background:white;">
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                </select>
+                <button type="submit"
+                        style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; transition:opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'"
+                        onclick="return confirm('Sab students ke reports generate/update karein?')">
+                    <i class="fas fa-magic"></i> Generate All Reports
+                </button>
+            </div>
+        </form>
+        {% endif %}
+
+        {% if reports and not user.is_superuser %}
+        <a href="{% url 'download_report_pdf' %}" class="download-pdf-btn">
+            <i class="fas fa-download"></i> Download PDF Report
+        </a>
+        {% endif %}
+
+    </div>
+</div>
+
+{% if user.is_superuser %}
+<!-- ── ADMIN: Summary Stats ── -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+    <div style="background:white; border-radius:14px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.07); text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:#667eea;">{{ students|length }}</div>
+        <div style="font-size:12px; color:#9ca3af; font-weight:600; text-transform:uppercase; margin-top:4px;">Total Students</div>
+    </div>
+    <div style="background:white; border-radius:14px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.07); text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:#10b981;">{{ reports|length }}</div>
+        <div style="font-size:12px; color:#9ca3af; font-weight:600; text-transform:uppercase; margin-top:4px;">Reports Generated</div>
+    </div>
+    <div style="background:white; border-radius:14px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.07); text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:#f59e0b;">{{ students|length }}</div>
+        <div style="font-size:12px; color:#9ca3af; font-weight:600; text-transform:uppercase; margin-top:4px;">Pending</div>
+    </div>
+</div>
+{% endif %}
+
+{% if reports %}
+
+<div class="reports-grid">
+    {% for report in reports %}
+
+    <div class="report-card">
+
+        <!-- Top: Course + Grade -->
+        <div class="report-card-top">
+            <div>
+                <div class="report-course">{{ report.course.name }}</div>
+                <div class="report-meta">
+                    <span class="report-meta-item">
+                        <i class="fas fa-calendar"></i>
+                        {{ report.academic_year }}
+                    </span>
+                    <span class="report-meta-item">
+                        <i class="fas fa-layer-group"></i>
+                        Semester {{ report.semester }}
+                    </span>
+                    <span class="report-meta-item">
+                        <i class="fas fa-user-check"></i>
+                        Attendance:
+                        {% if report.attendance_percentage %}
+                            {{ report.attendance_percentage|floatformat:1 }}%
+                        {% else %}—{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Grade big box -->
+            <div class="report-grade-big
+                {% if report.grade == 'A+' or report.grade == 'A' %}grade-big-a
+                {% elif report.grade == 'B+' or report.grade == 'B' %}grade-big-b
+                {% elif report.grade == 'C' %}grade-big-c
+                {% else %}grade-big-f{% endif %}">
+                {{ report.grade }}
+            </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="report-stats-row">
+            <div class="report-stat">
+                <div class="report-stat-val">{{ report.total_marks }}</div>
+                <div class="report-stat-label">Total Marks</div>
+            </div>
+            <div class="report-stat">
+                <div class="report-stat-val">{{ report.obtained_marks }}</div>
+                <div class="report-stat-label">Obtained</div>
+            </div>
+            <div class="report-stat">
+                <div class="report-stat-val">{{ report.percentage|floatformat:1 }}%</div>
+                <div class="report-stat-label">Percentage</div>
+            </div>
+            <div class="report-stat">
+                <div class="report-stat-val">{{ report.grade }}</div>
+                <div class="report-stat-label">Grade</div>
+            </div>
+        </div>
+
+        <!-- Percentage bar -->
+        <div class="report-pct-bar-wrap">
+            <div class="report-pct-label">
+                <span>Overall Performance</span>
+                <span>{{ report.percentage|floatformat:1 }}%</span>
+            </div>
+            <div class="report-pct-bg">
+                <div class="report-pct-fill
+                    {% if report.percentage >= 90 %}fill-great
+                    {% elif report.percentage >= 75 %}fill-good
+                    {% elif report.percentage >= 50 %}fill-avg
+                    {% else %}fill-poor{% endif %}"
+                    style="width: {{ report.percentage }}%">
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated date -->
+        <div class="report-generated">
+            <i class="fas fa-clock"></i>
+            Generated on {{ report.generated_at|date:"d M Y" }}
+        </div>
+
+    </div>
+
+    {% endfor %}
+</div>
+
+{% else %}
+
+<div class="reports-empty">
+    <div class="reports-empty-icon">
+        <i class="fas fa-file-alt"></i>
+    </div>
+    <h5>No Reports Available Yet</h5>
+    <p>Your performance reports will appear here once they are generated by your teacher or admin.</p>
+</div>
+
+{% endif %}
+
+{% endblock %}

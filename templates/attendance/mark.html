@@ -1,0 +1,556 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mark Attendance - {{ subject.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   MARK ATTENDANCE PAGE
+═══════════════════════════════════════ */
+
+/* Subject info card */
+.subject-info-card {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 16px;
+    padding: 22px 26px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.subject-info-left h3 {
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.subject-info-left .subject-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.subject-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+/* Date picker */
+.date-picker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.date-input {
+    padding: 9px 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    backdrop-filter: blur(4px);
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.date-input:focus {
+    border-color: rgba(255,255,255,0.7);
+}
+
+/* Quick mark all buttons */
+.quick-mark-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #f8f9ff;
+    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+}
+
+.quick-mark-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-right: 4px;
+}
+
+.quick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.quick-btn.all-present {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.quick-btn.all-present:hover { background: #a7f3d0; }
+
+.quick-btn.all-absent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.quick-btn.all-absent:hover { background: #fecaca; }
+
+/* ── ATTENDANCE TABLE ── */
+.att-table-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+
+.att-table-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.att-table-header h5 {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.att-table-header span {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.att-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.att-table thead tr {
+    background: #f8f9ff;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.att-table thead th {
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.att-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+
+.att-table tbody tr:hover { background: #fafbff; }
+.att-table tbody tr:last-child { border-bottom: none; }
+
+.att-table tbody td {
+    padding: 13px 16px;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Row number */
+.row-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* Roll badge */
+.roll-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Student name */
+.student-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* Status radio buttons — styled */
+.status-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-option {
+    position: relative;
+}
+
+.status-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.status-option label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+/* Default (unselected) */
+.status-option label {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #e5e7eb;
+}
+
+/* Selected states */
+.status-option input[value="present"]:checked + label {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+.status-option input[value="absent"]:checked + label {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+.status-option input[value="late"]:checked + label {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+.status-option input[value="excused"]:checked + label {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+/* Remarks input */
+.remarks-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.remarks-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+/* Action bar */
+.att-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 22px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.save-att-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    font-family: inherit;
+}
+
+.save-att-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.cancel-att-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: white;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.cancel-att-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 768px) {
+    .subject-info-card {
+        flex-direction: column;
+    }
+    .status-options {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'attendance_list' %}">Attendance</a>
+            </li>
+            <li class="breadcrumb-item active">{{ subject.name }}</li>
+        </ol>
+    </nav>
+    <h1 class="page-title">
+        <i class="fas fa-calendar-check"></i> Mark Attendance
+    </h1>
+</div>
+
+<form method="post">
+{% csrf_token %}
+
+<!-- ── SUBJECT INFO + DATE ── -->
+<div class="subject-info-card">
+    <div class="subject-info-left">
+        <h3>{{ subject.name }}</h3>
+        <div class="subject-badges">
+            <span class="subject-badge">
+                <i class="fas fa-code"></i> {{ subject.code }}
+            </span>
+            <span class="subject-badge">
+                <i class="fas fa-graduation-cap"></i> {{ subject.course.name }}
+            </span>
+        </div>
+    </div>
+
+    <div class="date-picker-wrap">
+        <span class="date-label"><i class="fas fa-calendar me-1"></i> Date</span>
+        <input type="date"
+               class="date-input"
+               id="date"
+               name="date"
+               value="{{ today|date:'Y-m-d' }}"
+               required>
+    </div>
+</div>
+
+<!-- ── ATTENDANCE TABLE ── -->
+<div class="att-table-card">
+
+    <div class="att-table-header">
+        <h5><i class="fas fa-users me-2"></i> Student List</h5>
+        <span>{{ students|length }} Students</span>
+    </div>
+
+    <!-- Quick Mark All -->
+    <div class="quick-mark-bar">
+        <span class="quick-mark-label">Quick Mark:</span>
+        <button type="button"
+                class="quick-btn all-present"
+                onclick="markAll('present')">
+            <i class="fas fa-check-circle"></i> All Present
+        </button>
+        <button type="button"
+                class="quick-btn all-absent"
+                onclick="markAll('absent')">
+            <i class="fas fa-times-circle"></i> All Absent
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="att-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td><span class="row-num">{{ forloop.counter }}</span></td>
+
+                    <td>
+                        <span class="roll-badge">{{ student.roll_number }}</span>
+                    </td>
+
+                    <td>
+                        <span class="student-name">{{ student.user.get_full_name }}</span>
+                    </td>
+
+                    <td>
+                        <!-- Styled radio buttons -->
+                        <div class="status-options">
+
+                            <div class="status-option">
+                                <input type="radio"
+                                       id="present_{{ student.id }}"
+                                       name="status_{{ student.id }}"
+                                       value="present"
+                                       checked>
+                                <label for="present_{{ student.id }}">
+                                    ✅ Present
+                                </label>
+                            </div>
+
+                            <div class="status-option">
+                                <input type="radio"
+                                       id="absent_{{ student.id }}"
+                                       name="status_{{ student.id }}"
+                                       value="absent">
+                                <label for="absent_{{ student.id }}">
+                                    ❌ Absent
+                                </label>
+                            </div>
+
+                            <div class="status-option">
+                                <input type="radio"
+                                       id="late_{{ student.id }}"
+                                       name="status_{{ student.id }}"
+                                       value="late">
+                                <label for="late_{{ student.id }}">
+                                    🕐 Late
+                                </label>
+                            </div>
+
+                            <div class="status-option">
+                                <input type="radio"
+                                       id="excused_{{ student.id }}"
+                                       name="status_{{ student.id }}"
+                                       value="excused">
+                                <label for="excused_{{ student.id }}">
+                                    📋 Excused
+                                </label>
+                            </div>
+
+                        </div>
+                    </td>
+
+                    <td>
+                        <input type="text"
+                               name="remarks_{{ student.id }}"
+                               class="remarks-input"
+                               placeholder="Optional...">
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:40px; color:#9ca3af;">
+                        <i class="fas fa-user-slash fa-2x d-block mb-2"></i>
+                        No students enrolled in this subject
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="att-action-bar">
+        <button type="submit" class="save-att-btn">
+            <i class="fas fa-save"></i> Save Attendance
+        </button>
+        <a href="{% url 'attendance_list' %}" class="cancel-att-btn">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+    </div>
+
+</div>
+
+</form>
+
+<!-- Quick mark all JS -->
+<script>
+function markAll(status) {
+    const radios = document.querySelectorAll(`input[type="radio"][value="${status}"]`);
+    radios.forEach(r => r.checked = true);
+}
+</script>
+
+{% endblock %}

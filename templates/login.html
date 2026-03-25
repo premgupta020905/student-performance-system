@@ -1,0 +1,506 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- FontAwesome -->
+  <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'styles1.css' %}" />
+
+  <title>SPTS Login</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="{% static 'favicon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
+
+  <style>
+    /* ── Override fonts ── */
+    body, input { font-family: 'DM Sans', sans-serif; }
+    .title, .panel h3 { font-family: 'Syne', sans-serif; }
+
+    /* ── Fix: h6 duplicate title hatao ── */
+    .sign-in-form h6.title { display: none; }
+
+    /* ── Logo styling ── */
+    .logo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .logo img {
+        width: 85px;
+        height: 85px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #4F46E5;
+        box-shadow: 0 4px 20px rgba(79,70,229,0.35);
+        padding: 4px;
+        background: white;
+    }
+
+    /* ── Error message styling ── */
+    .error-msg {
+        background: #fee2e2;
+        color: #991b1b;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        margin-top: 8px;
+        width: 100%;
+        max-width: 380px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    /* ── Title styling ── */
+    .sign-in-form .title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 6px;
+        font-family: 'Syne', sans-serif;
+    }
+
+    /* ── Subtitle under title ── */
+    .sign-in-form .subtitle {
+        font-size: 13px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+        font-weight: 400;
+    }
+
+    /* ── Copyright text ── */
+    .social-text {
+        font-size: 12px;
+        color: #bbb;
+        margin-top: 12px;
+    }
+
+    /* ── Validation message box ── */
+    #login-message {
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        color: #ef4444;
+        width: 100%;
+        max-width: 380px;
+    }
+
+    /* ══════════════════════════════
+       ABOUT SPTS — FULL REDESIGN
+    ══════════════════════════════ */
+
+    .sign-up-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 2.5rem 2rem;
+        overflow-y: auto;
+        width: 100%;
+        z-index: 1;
+        opacity: 0;
+        text-align: left;
+        direction: rtl;
+    }
+
+    .sign-up-form .about-wrapper {
+        direction: ltr;
+    }
+
+    .about-wrapper {
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+    }
+
+    /* Badge */
+    .about-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #EEF2FF, #F5F3FF);
+        border: 1px solid #C7D2FE;
+        border-radius: 100px;
+        padding: 6px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #4F46E5;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+    .about-badge .dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #4F46E5;
+        animation: pulse-dot 1.8s infinite;
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* Big heading */
+    .about-heading {
+        font-family: 'Syne', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0F172A;
+        line-height: 1.2;
+        margin-bottom: 12px;
+    }
+    .about-heading span {
+        background: linear-gradient(135deg, #4F46E5, #7C3AED);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .about-desc {
+        font-size: 13.5px;
+        color: #64748B;
+        line-height: 1.75;
+        margin-bottom: 26px;
+        font-weight: 400;
+    }
+
+    /* Stats row */
+    .about-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+    .stat-card {
+        background: #FAFAFA;
+        border: 1px solid #E8EDF5;
+        border-radius: 16px;
+        padding: 18px 8px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(79,70,229,0.12);
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        border-radius: 16px 16px 0 0;
+    }
+    .stat-card:nth-child(1)::before { background: linear-gradient(90deg, #4F46E5, #818CF8); }
+    .stat-card:nth-child(2)::before { background: linear-gradient(90deg, #7C3AED, #A78BFA); }
+    .stat-card:nth-child(3)::before { background: linear-gradient(90deg, #06B6D4, #38BDF8); }
+
+    .stat-num {
+        font-family: 'Syne', sans-serif;
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    .stat-card:nth-child(1) .stat-num { color: #4F46E5; }
+    .stat-card:nth-child(2) .stat-num { color: #7C3AED; }
+    .stat-card:nth-child(3) .stat-num { color: #06B6D4; }
+    .stat-label { font-size: 11px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Section label */
+    .section-label {
+        font-size: 10.5px;
+        font-weight: 800;
+        color: #94A3B8;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #E2E8F0;
+    }
+
+    /* Features grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 28px;
+    }
+    .feature-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: #1E293B;
+        font-weight: 500;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .feature-pill:hover {
+        border-color: #C7D2FE;
+        background: #EEF2FF;
+    }
+    .feature-pill .fp-icon {
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+    .fp-icon.blue   { background: #EEF2FF; }
+    .fp-icon.purple { background: #F5F3FF; }
+    .fp-icon.cyan   { background: #ECFEFF; }
+    .fp-icon.green  { background: #F0FDF4; }
+    .fp-icon.rose   { background: #FFF1F2; }
+    .fp-icon.amber  { background: #FFFBEB; }
+
+    /* Info cards */
+    .info-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 0; }
+    .info-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px 18px;
+        transition: box-shadow 0.2s;
+    }
+    .info-card:hover { box-shadow: 0 4px 16px rgba(79,70,229,0.08); }
+    .info-icon {
+        width: 40px; height: 40px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .info-icon.indigo  { background: #EEF2FF; }
+    .info-icon.violet  { background: #F5F3FF; }
+    .info-icon.sky     { background: #F0F9FF; }
+    .info-card-body dt {
+        font-family: 'Syne', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+    .info-card-body dd {
+        font-size: 12.5px;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.6;
+    }
+    .info-card-body a {
+        color: #4F46E5;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .info-card-body a:hover { text-decoration: underline; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="forms-container">
+      <div class="signin-signup">
+
+        <!-- ✅ LOGIN FORM -->
+        <form method="POST" action="{% url 'login' %}" class="sign-in-form">
+          {% csrf_token %}
+
+          <!-- Logo -->
+          <div class="logo">
+            <img src="{% static 'logo.jpg' %}" alt="SPTS Logo">
+          </div>
+
+          <!-- Title -->
+          <h2 class="title">Sign in</h2>
+          <p class="subtitle">Welcome back! Please enter your details.</p>
+
+          <!-- Username -->
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" name="username" placeholder="Username" required />
+          </div>
+
+          <!-- Password -->
+          <div class="input-field password-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" placeholder="Password" id="pwd" required />
+            <input type="checkbox" class="show-password" title="Show password" />
+          </div>
+
+          <!-- Submit -->
+          <input class="btn solid" type="submit" value="Login" />
+
+          <!-- Django error messages -->
+          {% if messages %}
+          {% for message in messages %}
+          <div class="error-msg">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ message }}
+          </div>
+          {% endfor %}
+          {% endif %}
+
+          <!-- Copyright -->
+          <p class="social-text">
+            © 2026 Student Performance Tracking System (SPTS)
+          </p>
+        </form>
+
+        <!-- ══ ABOUT FORM — REDESIGNED ══ -->
+        <form class="sign-up-form">
+          <div class="about-wrapper">
+
+            <!-- Badge -->
+            <div class="about-badge">
+              <span class="dot"></span>
+              Student Performance Tracking
+            </div>
+
+            <!-- Heading -->
+            <h2 class="about-heading">About <span>SPTS</span></h2>
+            <p class="about-desc">
+              A smart, all-in-one platform built for schools and coaching institutes to track, analyze, and improve student performance — saving teachers hours every week.
+            </p>
+
+            <!-- Stats -->
+            <div class="about-stats">
+              <div class="stat-card">
+                <div class="stat-num">100+</div>
+                <div class="stat-label">Students</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">10+</div>
+                <div class="stat-label">Teachers</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">5+</div>
+                <div class="stat-label">Courses</div>
+              </div>
+            </div>
+
+            <!-- Features -->
+            <div class="section-label">Key Features</div>
+            <div class="features-grid">
+              <div class="feature-pill">
+                <div class="fp-icon blue">📋</div> Attendance Tracking
+              </div>
+              <div class="feature-pill">
+                <div class="fp-icon purple">📝</div> Marks Management
+              </div>
+              <div class="feature-pill">
+                <div class="fp-icon cyan">📄</div> PDF Reports
+              </div>
+              <div class="feature-pill">
+                <div class="fp-icon green">🔐</div> Role-based Access
+              </div>
+              <div class="feature-pill">
+                <div class="fp-icon rose">📊</div> Performance Dashboard
+              </div>
+              <div class="feature-pill">
+                <div class="fp-icon amber">📤</div> Excel Import/Export
+              </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="section-label">More Info</div>
+            <div class="info-cards">
+              <div class="info-card">
+                <div class="info-icon indigo">🎯</div>
+                <dl class="info-card-body">
+                  <dt>Our Mission</dt>
+                  <dd>Make performance tracking easier for every school & student — reducing teachers' workload significantly.</dd>
+                </dl>
+              </div>
+              <div class="info-card">
+                <div class="info-icon violet">👥</div>
+                <dl class="info-card-body">
+                  <dt>Who Can Use This?</dt>
+                  <dd>Schools, Teachers, Students, Parents, Coaching Classes & Educational Institutes.</dd>
+                </dl>
+              </div>
+              <div class="info-card">
+                <div class="info-icon sky">📧</div>
+                <dl class="info-card-body">
+                  <dt>Contact Us</dt>
+                  <dd>Have questions? We're always here to help.<br>
+                    <a href="mailto:support@spts.com">support@spts.com</a>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+
+          </div>
+        </form>
+        <!-- END ABOUT FORM -->
+
+      </div>
+    </div>
+
+    <!-- PANELS -->
+    <div class="panels-container">
+
+      <div class="panel left-panel">
+        <div class="content">
+          <h3>New here?</h3>
+          <p>
+            SPTS provides teachers and institutions the smartest way to track,
+            analyze, and improve student performance. Know more about us!
+          </p>
+          <button class="btn transparent" id="sign-up-btn">About</button>
+        </div>
+        <img src="{% static 'log.svg' %}" class="image" alt="Login illustration" />
+      </div>
+
+      <div class="panel right-panel">
+        <div class="content">
+          <div class="logo">
+            <img src="{% static 'logo.jpg' %}" alt="SPTS Logo">
+          </div>
+          <h3>About Us</h3>
+          <p>
+            SPTS delivers an efficient and intelligent way to monitor academic
+            progress and enhance student success.
+          </p>
+          <p>
+            Our platform helps teachers, parents, and students easily check
+            academic progress, highlight areas needing improvement, and support
+            better learning outcomes.
+          </p>
+          <button class="btn transparent" id="sign-in-btn">Login</button>
+        </div>
+        <img src="{% static 'register.svg' %}" class="image" alt="About illustration" />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="{% static 'app.js' %}"></script>
+</body>
+</html>

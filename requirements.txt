@@ -1,3 +1,4 @@
 Django==5.2.8
 gunicorn
 PyMySQL
+xhtml2pdf==0.2.17

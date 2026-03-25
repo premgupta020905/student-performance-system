@@ -85,8 +85,10 @@ DATABASES = {
         'PASSWORD': 'GwSFQGKqVDFACXwViNpMnNxHhKDlMfXP',
         'HOST': 'crossover.proxy.rlwy.net',
         'PORT': '38289',
+        'OPTIONS': {
+            'connect_timeout': 10,
+        }
     }
-
 }
 
 

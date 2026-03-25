@@ -115,17 +115,20 @@
                 <div class="user-info">
                     <div class="user-avatar">
                         {% if user.teacher_profile and user.teacher_profile.profile_image %}
-                            <img src="{{ user.teacher_profile.profile_image.url }}"
-                                 class="rounded-circle"
-                                 width="40" height="40">
+                        <img src="{{ user.teacher_profile.profile_image.url }}"
+                        class="rounded-circle"
+                        width="40" height="40">
+                        
                         {% elif user.student_profile and user.student_profile.profile_image %}
-                            <img src="{{ user.student_profile.profile_image.url }}"
-                                 class="rounded-circle"
-                                 width="40" height="40">
+                        <img src="{{ user.student_profile.profile_image.url }}"
+                        class="rounded-circle"
+                        width="40" height="40">
+                        
                         {% else %}
-                            <i class="fas fa-user-circle fa-2x"></i>
+                        <img src="{% static 'images/default.png' %}"
+                        class="rounded-circle"
+                        width="40" height="40">
                         {% endif %}
-                    </div>
 
                     <div class="user-details">
                         <span class="user-name">{{ user.get_full_name|default:user.username }}</span>

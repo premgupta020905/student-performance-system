@@ -7,7 +7,12 @@ from django.db.models.functions import TruncMonth
 from datetime import datetime
 from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from django.conf import settings
+import os
 import io
 import json
 from django.contrib.auth.forms import PasswordChangeForm
@@ -920,9 +925,11 @@ def download_report_pdf(request):
         return HttpResponse("Unauthorized", status=403)
 
     student = Student.objects.get(user=request.user)
-    marks   = Mark.objects.filter(student=student).select_related('exam', 'exam__subject')
+    marks = Mark.objects.filter(student=student).select_related('exam__subject')
 
     total_exams = marks.count()
+
+    # Average %
     if total_exams > 0:
         total_pct = sum(
             (m.marks_obtained / m.exam.max_marks * 100)
@@ -932,40 +939,110 @@ def download_report_pdf(request):
     else:
         avg_percentage = 0
 
-    # ✅ Dynamic academic year
-    current_year  = datetime.now().year
-    academic_year = f"{current_year - 1} – {current_year}"
-
-    import os
-    from django.conf import settings as django_settings
-
-    # ✅ Photo ka absolute local path pass karo template ko
-    photo_path = None
-    if student.profile_image:
-        photo_path = os.path.join(
-            django_settings.MEDIA_ROOT,
-            str(student.profile_image)
-        )
-        # Windows path fix — forward slash use karo
-        photo_path = photo_path.replace('\\', '/')
-
-    template = get_template('reports/pdf.html')
-    html     = template.render({
-        'student':        student,
-        'marks':          marks,
-        'generated_on':   datetime.now(),
-        'total_exams':    total_exams,
-        'avg_percentage': avg_percentage,
-        'academic_year':  academic_year,
-        'photo_path':     photo_path,
-    })
+    # Grade
+    if avg_percentage >= 90: grade = 'A+'
+    elif avg_percentage >= 80: grade = 'A'
+    elif avg_percentage >= 70: grade = 'B+'
+    elif avg_percentage >= 60: grade = 'B'
+    elif avg_percentage >= 50: grade = 'C'
+    elif avg_percentage >= 40: grade = 'D'
+    else: grade = 'F'
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="Student_Result.pdf"'
-    pisa.CreatePDF(io.StringIO(html), response)
+    response['Content-Disposition'] = 'attachment; filename="Student_Report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # HEADER
+    elements.append(Paragraph("<b>Sree Narayan Guru College of Commerce</b>", styles['Title']))
+    elements.append(Paragraph("Student Performance Report", styles['Heading2']))
+    elements.append(Spacer(1, 15))
+
+    # PHOTO
+    photo = None
+    if student.profile_image:
+        img_path = os.path.join(settings.MEDIA_ROOT, str(student.profile_image))
+        img_path = img_path.replace("\\", "/")
+
+        if os.path.exists(img_path):
+            photo = Image(img_path, width=80, height=100)
+
+    # INFO
+    info_data = [
+        ["Name:", student.user.get_full_name()],
+        ["Roll No:", student.roll_number],
+        ["Department:", student.department.name],
+        ["Email:", student.user.email or "-"],
+        ["Phone:", student.phone or "-"],
+    ]
+
+    info_table = Table(info_data, colWidths=[100, 250])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+    ]))
+
+    if photo:
+        combined = Table([[photo, info_table]])
+    else:
+        combined = Table([["No Image", info_table]])
+
+    elements.append(combined)
+    elements.append(Spacer(1, 20))
+
+    # MARKS TABLE
+    data = [["#", "Subject", "Exam", "Max", "Marks", "%"]]
+
+    for i, m in enumerate(marks, start=1):
+        percentage = (m.marks_obtained / m.exam.max_marks * 100) if m.exam.max_marks else 0
+
+        data.append([
+            i,
+            m.exam.subject.name,
+            m.exam.name,
+            m.exam.max_marks,
+            m.marks_obtained,
+            f"{round(percentage,1)}%"
+        ])
+
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#667eea")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ]))
+
+    elements.append(Paragraph("<b>Detailed Exam Results</b>", styles['Heading3']))
+    elements.append(Spacer(1, 10))
+    elements.append(table)
+
+    elements.append(Spacer(1, 20))
+
+    # SUMMARY
+    elements.append(Paragraph("<b>Performance Summary</b>", styles['Heading3']))
+    elements.append(Paragraph(f"Total Exams: {total_exams}", styles['Normal']))
+    elements.append(Paragraph(f"Average Percentage: {avg_percentage}%", styles['Normal']))
+    elements.append(Paragraph(f"Overall Grade: {grade}", styles['Normal']))
+
+    elements.append(Spacer(1, 40))
+
+    # SIGNATURE
+    sign_table = Table([
+        ["Class Teacher", "HOD", "Principal"],
+        ["\n\n________________", "\n\n________________", "\n\n________________"]
+    ])
+    sign_table.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'CENTER')
+    ]))
+
+    elements.append(sign_table)
+
+    doc.build(elements)
+
     return response
-
-
 
 
 # =========================

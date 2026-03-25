@@ -3,3 +3,4 @@ gunicorn
 PyMySQL
 reportlab
 whitenoise
+whitenoise==6.6.0
